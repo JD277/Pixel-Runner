@@ -11,13 +11,12 @@ pygame.display.set_caption('Dinosour game')
 # Para colocar la cantidad de FPS por segundo
 Clock = pygame.time.Clock()
 
-# Nueva superficie
-# test_surface = pygame.Surface((400, 200))
-# test_surface.fill('Red')
-
 test_font = pygame.font.Font('Fonts/Origin.ttf', 50)
 Background = pygame.image.load('Graphics/fondo_contacto.png').convert()
 Ground = pygame.image.load('Graphics/ground.png').convert_alpha()
+#----------------------------------------------------------------------------
+Game_active = True
+#----------------------------------------------------------------------------
 text_surface = test_font.render('My game', False, 'Black')
 text_rect = text_surface.get_rect(center= (400,50))
 #----------------------------------------------------------------------------
@@ -36,36 +35,41 @@ while true_value:
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
-        if event.type == pygame.MOUSEBUTTONDOWN :
-            hola = event.pos
-            if Player_rect.collidepoint(hola) :
-                Player_gravity = -20
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                Player_gravity = -20
+        if Game_active:
+            if event.type == pygame.MOUSEBUTTONDOWN :
+                hola = event.pos
+                if Player_rect.collidepoint(hola) and Player_rect.bottom == 350:
+                    Player_gravity = -20
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and Player_rect.bottom == 350:
+                    Player_gravity = -20
+        else:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                Game_active = True
+                Enemy_rect.x = 810
+    if Game_active:
+        # Para generar la superficie
+        canvas.blit(Background, (0, 0))
+        canvas.blit(Ground, (0, 75))
+        canvas.blit(text_surface, text_rect)
+        #-----------------------------------------
+        Enemy_rect.right = Enemy_rect.right - 4
+        if Enemy_rect.x <= -100:
+            Enemy_rect.x = 810
+        canvas.blit(Enemy_surface, Enemy_rect)
+        #-----------------------------------------
+        Player_gravity += 1
+        Player_rect.y += Player_gravity
+        if Player_rect.bottom >= 350:
+            Player_rect.bottom = 350
+        canvas.blit(Player_surface,Player_rect)
+        #-----------------------------------------
 
-    # Para generar la superficie
-    canvas.blit(Background, (0, 0))
-    canvas.blit(Ground, (0, 75))
-    canvas.blit(text_surface, text_rect)
-    #-----------------------------------------
-    Enemy_rect.right = Enemy_rect.right - 4
-    if Enemy_rect.x <= -100:
-        Enemy_rect.x = 810
-    canvas.blit(Enemy_surface, Enemy_rect)
-    #-----------------------------------------
-    Player_gravity += 1
-    Player_rect.y += Player_gravity
-    canvas.blit(Player_surface,Player_rect)
-    #-----------------------------------------
-    #Collisions
-    #if Player_rect.colliderect(Enemy_rect):
-     #   print('collision')
-    #Keyboard input
-    #Keys = pygame.key.get_pressed()
-    #if Keys[pygame.K_SPACE]:
-        #print('Jump')
+        if Enemy_rect.colliderect(Player_rect):
+            Game_active = False
 
+    else:
+        canvas.fill('Gold')
 
     # Para actualizar y a cuantos FPS
     pygame.display.update()
