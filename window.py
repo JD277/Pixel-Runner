@@ -16,14 +16,18 @@ Clock = pygame.time.Clock()
 # test_surface.fill('Red')
 
 test_font = pygame.font.Font('Fonts/Origin.ttf', 50)
-
 Background = pygame.image.load('Graphics/fondo_contacto.png').convert()
 Ground = pygame.image.load('Graphics/ground.png').convert_alpha()
 text_surface = test_font.render('My game', False, 'Black')
-
-Enemy_surface = pygame.image.load('Graphics/Cube.png').convert_alpha()
-Enemy_x_position = 400
-Player_surface = pygame.image.load('Graphics/player1.png').convert_alpha()
+text_rect = text_surface.get_rect(center= (400,50))
+#----------------------------------------------------------------------------
+Enemy_surface = pygame.image.load('Graphics/snailWalk1.png').convert_alpha()
+Enemy_rect = Enemy_surface.get_rect(midbottom = (720, 340))
+#----------------------------------------------------------------------------
+Player_surface = pygame.image.load('Graphics/p1_front.png').convert_alpha()
+Player_rect = Player_surface.get_rect(topleft = (80, 255))
+Player_gravity = 0
+#----------------------------------------------------------------------------
 true_value = True
 
 while true_value:
@@ -32,16 +36,36 @@ while true_value:
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
+        if event.type == pygame.MOUSEBUTTONDOWN :
+            hola = event.pos
+            if Player_rect.collidepoint(hola) :
+                Player_gravity = -20
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                Player_gravity = -20
 
     # Para generar la superficie
     canvas.blit(Background, (0, 0))
-    Enemy_x_position -= 4
-    if Enemy_x_position == -500:
-        Enemy_x_position = 600
-    canvas.blit(Enemy_surface, (Enemy_x_position, 200))
     canvas.blit(Ground, (0, 75))
-    canvas.blit(text_surface, (300, 60))
-    canvas.blit(Player_surface, (80, 140))
+    canvas.blit(text_surface, text_rect)
+    #-----------------------------------------
+    Enemy_rect.right = Enemy_rect.right - 4
+    if Enemy_rect.x <= -100:
+        Enemy_rect.x = 810
+    canvas.blit(Enemy_surface, Enemy_rect)
+    #-----------------------------------------
+    Player_gravity += 1
+    Player_rect.y += Player_gravity
+    canvas.blit(Player_surface,Player_rect)
+    #-----------------------------------------
+    #Collisions
+    #if Player_rect.colliderect(Enemy_rect):
+     #   print('collision')
+    #Keyboard input
+    #Keys = pygame.key.get_pressed()
+    #if Keys[pygame.K_SPACE]:
+        #print('Jump')
+
 
     # Para actualizar y a cuantos FPS
     pygame.display.update()
