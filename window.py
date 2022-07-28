@@ -1,6 +1,7 @@
+import random
 from sys import exit
 import pygame
-from random import random
+
 
 def Display_score():
     current_time = int(pygame.time.get_ticks() /1000) - Start_time
@@ -8,6 +9,32 @@ def Display_score():
     Score_rect = Score_surf.get_rect(center = (400, 50))
     canvas.blit(Score_surf,Score_rect)
     return current_time
+
+def obstacle_movement(obstacle_list) :
+    if obstacle_list:
+        for obstacle_rect in obstacle_list:
+            obstacle_rect.x = obstacle_rect.x - 5
+            if Score >= 10:
+                obstacle_rect.x = obstacle_rect.x - 7
+
+            if obstacle_rect.bottom == 340:
+                canvas.blit(Enemy_surface, obstacle_rect)
+            else:
+                canvas.blit(fly_surface, obstacle_rect)
+            obstacle_list = [obstacle for obstacle in obstacle_list if obstacle.x > -100]
+        return obstacle_list
+    else:
+        return []
+
+def collision(Player, obstacles) :
+    if obstacles:
+        for obstacles_rect in obstacles:
+            if Player.colliderect(obstacles_rect):
+                return False
+
+    return True
+
+
 
 pygame.init()
 # Para Desplegar el canvas
@@ -35,9 +62,10 @@ Inst_surface2 = pygame.transform.rotozoom(Inst_surface2,0,0.5)
 Inst_rect2 = Inst_surface2.get_rect(center= (400,40))
 #----------------------------------------------------------------------------
 Enemy_surface = pygame.image.load('Graphics/snailWalk1.png').convert_alpha()
-Enemy_rect = Enemy_surface.get_rect(midbottom = (720, 340))
+obstacle_rect_list = []
 
-obstacule_rect_list = []
+fly_surface = pygame.image.load('Graphics/flyFly1.png').convert_alpha()
+
 #----------------------------------------------------------------------------
 Player_surface = pygame.image.load('Graphics/p1_front.png').convert_alpha()
 Player_rect = Player_surface.get_rect(topleft = (80, 255))
@@ -72,12 +100,15 @@ while true_value:
         else:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 Game_active = True
-                Enemy_rect.x = 810
                 Start_time = int(pygame.time.get_ticks() / 1000)
 
         if event.type == obstacule_timer and Game_active == True:
-            obstacule_rect_list.append(Enemy_rect = Enemy_surface.get_rect(midbottom = (random(900,1100), 340))
-)
+            if random.randint(0,2):
+                obstacle_rect_list.append(Enemy_surface.get_rect(
+                    midbottom = (random.randint(900, 1100), 340)))
+            else:
+                obstacle_rect_list.append(fly_surface.get_rect(
+                    midbottom = (random.randint(900, 1100), 210)))
 
     if Game_active:
         # Para generar la superficie
@@ -87,7 +118,7 @@ while true_value:
         #-----------------------------------------
         #Enemy_rect.right = Enemy_rect.right - 4
         #if Enemy_rect.x <= -100:
-         #   Enemy_rect.x = 810
+        #    Enemy_rect.x = 810
         #canvas.blit(Enemy_surface, Enemy_rect)
         #-----------------------------------------
         Player_gravity += 1
@@ -96,15 +127,17 @@ while true_value:
             Player_rect.bottom = 350
         canvas.blit(Player_surface,Player_rect)
         #-----------------------------------------
-        obstacule_movement()
+        obstacle_rect_list = obstacle_movement(obstacle_rect_list)
         #-----------------------------------------
+        Game_active = collision(Player_rect,obstacle_rect_list)
 
-        if Enemy_rect.colliderect(Player_rect):
-            Game_active = False
 
     else:
         canvas.fill('#3e3f53')
         canvas.blit(Player_stand,Player_rect2)
+        obstacle_rect_list.clear()
+        Player_rect.topleft = (80, 255)
+        Player_gravity = 0
         Score_message = test_font.render(f'Your score: {Score}', False,'#98caff')
         Score_message_rect = Score_message.get_rect(center = (500,350))
         Score_message = pygame.transform.rotozoom(Score_message, 0, 0.5)
